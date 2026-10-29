@@ -1,0 +1,19 @@
+WAYANAD LANDSLIDE DATA PREPROCESSING REPORT
+
+Files cleaned:
+- rainfall_clean_station_level.csv
+- rainfall_daily_district_summary.csv
+- soil_moisture_clean.csv
+- historical_landslides_wayanad_clean.csv
+
+Findings:
+- Rainfall: 3221 valid station-level rows; 768 distinct dates, 2021-03-02 to 2025-03-28.
+- Soil moisture: 248 rows, 2020-01-01 to 2020-09-23.
+- Exact rainfall/soil-moisture date overlap: 0 dates.
+- Wayanad historical landslide inventory: 67 records after cleaning; 67 have an extractable year.
+
+Important:
+The files are cleaned, but they are NOT yet a valid supervised XGBoost training table. Rainfall starts after the soil-moisture dataset ends, so these two features cannot be aligned by date. The landslide inventory records event locations and some event years, but does not supply daily non-landslide labels. Do not create synthetic labels or report model accuracy until the data are aligned and labels are justified.
+
+Recommended next step:
+Obtain soil-moisture data that overlaps the rainfall period (2021-2025), OR rainfall data overlapping 2020. Then define a defensible target label and construct the training table. Ground movement can be added later when a suitable dataset exists.

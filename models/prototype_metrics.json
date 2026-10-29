@@ -1,0 +1,30 @@
+{
+    "model_purpose": "High-rainfall proxy demonstration only",
+    "not_a_landslide_prediction_model": true,
+    "label_definition": "1 means rainfall_mean_mm is at or above the 90th percentile of the training-period rainfall mean.",
+    "threshold_mm": 36.11428571428573,
+    "training_rows": 614,
+    "testing_rows": 154,
+    "test_proxy_positive_count": 22,
+    "accuracy": 0.9675324675324676,
+    "precision": 0.84,
+    "recall": 0.9545454545454546,
+    "f1_score": 0.8936170212765957,
+    "confusion_matrix_labels_0_1": [
+        [
+            128,
+            4
+        ],
+        [
+            1,
+            21
+        ]
+    ],
+    "roc_auc": 0.9962121212121212,
+    "features": [
+        "rainfall_max_mm",
+        "rainfall_min_mm",
+        "station_count"
+    ],
+    "warning": "These metrics evaluate a rainfall proxy, not landslide occurrence. The proxy threshold is a demonstration rule, not a validated landslide trigger threshold."
+}

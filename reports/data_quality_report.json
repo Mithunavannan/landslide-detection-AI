@@ -1,0 +1,31 @@
+{
+  "rainfall_raw_rows": 3221,
+  "rainfall_clean_station_rows": 3221,
+  "rainfall_unique_dates": 768,
+  "rainfall_date_min": "2021-03-02",
+  "rainfall_date_max": "2025-03-28",
+  "rainfall_stations": [
+    "Baveli",
+    "F.C.S. Mananthavadi",
+    "Kalladi",
+    "Kalpetta (Karapuzha)",
+    "PULPALLY",
+    "Thirunelly",
+    "Vazhavatta"
+  ],
+  "soil_raw_rows": 248,
+  "soil_clean_rows": 248,
+  "soil_date_min": "2020-01-01",
+  "soil_date_max": "2020-09-23",
+  "exact_date_overlap_rainfall_soil": 0,
+  "historical_inventory_raw_rows": 196,
+  "historical_inventory_clean_rows_all_districts": 191,
+  "historical_inventory_wayanad_rows": 67,
+  "historical_inventory_wayanad_rows_with_year": 67,
+  "training_ready": false,
+  "training_blockers": [
+    "Rainfall and soil-moisture date ranges do not overlap (soil moisture is from 2020; rainfall starts in 2021).",
+    "Historical inventory is an event/location inventory, not a complete daily 0/1 landslide/no-landslide label series.",
+    "No ground-movement dataset was provided yet."
+  ]
+}

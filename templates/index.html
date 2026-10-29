@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TerraWatch | Wayanad Rainfall Monitor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#dashboard" data-page="dashboard">
+        <span class="brand-mark">T</span>
+        <span><strong>TerraWatch</strong><small>WAYANAD MONITOR</small></span>
+      </a>
+
+      <div class="nav-label">WORKSPACE</div>
+      <nav class="nav">
+        <a class="nav-link active" href="#dashboard" data-page="dashboard"><span class="nav-icon">▦</span> Dashboard</a>
+        <a class="nav-link" href="#check-risk" data-page="check-risk"><span class="nav-icon">⌁</span> Check risk on your area</a>
+        <a class="nav-link" href="#data" data-page="data"><span class="nav-icon">▤</span> Dataset overview</a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="status-card">
+          <span class="status-dot"></span>
+          <div><strong>{% if model_ready %}Model loaded{% else %}Model not found{% endif %}</strong><small>{% if model_ready %}Local inference ready{% else %}Check model path{% endif %}</small></div>
+        </div>
+        <div class="sidebar-note">Prototype build · Localhost only</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="mobile-brand"><span class="brand-mark">T</span><strong>TerraWatch</strong></div>
+        <div class="breadcrumb"><span>Workspace</span><b>/</b><strong id="breadcrumb-current">Dashboard</strong></div>
+        <div class="topbar-right"><span class="local-pill"><span class="status-dot"></span> LOCAL MODEL</span><div class="avatar">WT</div></div>
+      </header>
+
+      <section class="page active" id="page-dashboard">
+        <div class="page-heading">
+          <div><div class="eyebrow">WAYANAD · KERALA, INDIA</div><h1>Rainfall monitoring dashboard</h1><p>Explore rainfall observations and test the local machine-learning prototype.</p></div>
+          <button class="button button-primary" data-go="check-risk">＋ Check an area</button>
+        </div>
+
+        <div class="notice-banner">
+          <div class="notice-icon">i</div>
+          <div><strong>Research prototype — not an operational landslide warning system</strong><p>This model classifies a high-rainfall proxy. It has not been trained or validated to predict landslides.</p></div>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card"><div class="stat-top"><span>Rainfall records</span><span class="stat-icon green">▤</span></div><div class="stat-value">{{ summary.rows if summary.rows is not none else "—" }}</div><div class="stat-foot">Rows in the loaded rainfall summary</div></article>
+          <article class="stat-card"><div class="stat-top"><span>Mean rainfall</span><span class="stat-icon blue">↗</span></div><div class="stat-value">{% if summary.rainfall_mean is not none %}{{ summary.rainfall_mean }}<small> mm</small>{% else %}—{% endif %}</div><div class="stat-foot">Mean of available daily summary values</div></article>
+          <article class="stat-card"><div class="stat-top"><span>Highest station value</span><span class="stat-icon amber">⌁</span></div><div class="stat-value">{% if summary.max_rainfall is not none %}{{ summary.max_rainfall }}<small> mm</small>{% else %}—{% endif %}</div><div class="stat-foot">Maximum recorded value in the dataset</div></article>
+          <article class="stat-card"><div class="stat-top"><span>Prototype threshold</span><span class="stat-icon purple">◎</span></div><div class="stat-value">{% if threshold is not none %}{{ "%.2f"|format(threshold) }}<small> mm</small>{% else %}—{% endif %}</div><div class="stat-foot">90th percentile of training-period mean rainfall</div></article>
+        </div>
+
+        <div class="content-grid">
+          <article class="panel chart-panel">
+            <div class="panel-heading"><div><h2>Model evaluation snapshot</h2><p>Held-out observations · rainfall proxy only</p></div><span class="tag tag-neutral">Offline evaluation</span></div>
+            {% if metrics %}
+            <div class="metric-hero"><div><span class="metric-number">{{ "%.1f"|format(metrics.get("accuracy", 0) * 100) }}%</span><span class="metric-caption">Proxy classification accuracy</span></div><div class="metric-side"><span>Test rows</span><strong>{{ metrics.get("testing_rows", "—") }}</strong></div></div>
+            <div class="metric-bars">
+              <div class="metric-row"><div><span>Precision</span><strong>{{ "%.1f"|format(metrics.get("precision", 0) * 100) }}%</strong></div><div class="bar-track"><span style="width:{{ metrics.get('precision', 0) * 100 }}%"></span></div></div>
+              <div class="metric-row"><div><span>Recall</span><strong>{{ "%.1f"|format(metrics.get("recall", 0) * 100) }}%</strong></div><div class="bar-track"><span style="width:{{ metrics.get('recall', 0) * 100 }}%"></span></div></div>
+              <div class="metric-row"><div><span>F1 score</span><strong>{{ "%.1f"|format(metrics.get("f1_score", 0) * 100) }}%</strong></div><div class="bar-track"><span style="width:{{ metrics.get('f1_score', 0) * 100 }}%"></span></div></div>
+            </div>
+            {% else %}
+            <div class="empty-state">Evaluation metrics were not found. Run the training script to create them.</div>
+            {% endif %}
+            <div class="small-warning">These metrics measure the high-rainfall proxy—not landslide prediction performance.</div>
+          </article>
+
+          <article class="panel quick-panel">
+            <div class="panel-heading"><div><h2>Quick check</h2><p>Try the trained model with your values</p></div><span class="quick-icon">⌁</span></div>
+            <div class="quick-illustration"><div class="hill hill-back"></div><div class="hill hill-front"></div><div class="rain-lines">╱ ╱ ╱ ╱ ╱</div><span class="pin">●</span></div>
+            <h3>Check rainfall conditions</h3><p>Enter minimum and maximum station rainfall, plus the number of reporting stations.</p>
+            <button class="button button-primary button-full" data-go="check-risk">Open area checker <span>→</span></button>
+          </article>
+        </div>
+        <div class="bottom-note"><span>✳</span><p><strong>Designed for research and demonstration.</strong> Do not use this page for evacuation decisions or real-world emergency response.</p></div>
+      </section>
+
+      <section class="page" id="page-check-risk">
+        <div class="page-heading">
+          <div><div class="eyebrow">LOCAL INFERENCE</div><h1>Check risk on your area</h1><p>Enter rainfall summary values to run the trained XGBoost prototype.</p></div>
+          <span class="tag tag-green">No account required</span>
+        </div>
+
+        <div class="notice-banner notice-banner-amber">
+          <div class="notice-icon">!</div>
+          <div><strong>This is a rainfall-category test, not a landslide-risk assessment.</strong><p>The current model predicts a high-rainfall proxy from station summaries. It does not use your GPS location or live weather.</p></div>
+        </div>
+
+        <div class="checker-layout">
+          <article class="panel form-panel">
+            <div class="panel-heading"><div><h2>Area conditions</h2><p>Use observed values from the same date and station group.</p></div><span class="step-number">01</span></div>
+            <form id="prediction-form">
+              <label for="area-name">Area name <span class="optional">optional</span></label>
+              <input id="area-name" type="text" placeholder="e.g. Meppadi, Wayanad" maxlength="80">
+
+              <div class="form-two">
+                <div><label for="rainfall-max">Maximum station rainfall <span class="unit">mm</span></label><input id="rainfall-max" type="number" min="0" max="1000" step="0.1" placeholder="e.g. 80" required><small>Highest station reading for the day</small></div>
+                <div><label for="rainfall-min">Minimum station rainfall <span class="unit">mm</span></label><input id="rainfall-min" type="number" min="0" max="1000" step="0.1" placeholder="e.g. 20" required><small>Lowest station reading for the day</small></div>
+              </div>
+              <label for="station-count">Number of reporting stations</label>
+              <input id="station-count" type="number" min="1" max="10000" step="1" placeholder="e.g. 5" required>
+              <small class="field-hint">Use the same definitions as the rainfall dataset. Do not enter guessed values as real observations.</small>
+
+              <div class="form-actions"><button type="button" class="button button-secondary" id="fill-example">Load example values</button><button type="submit" class="button button-primary" id="run-prediction">Run model <span>→</span></button></div>
+              <div id="form-error" class="form-error" role="alert" hidden></div>
+            </form>
+          </article>
+
+          <article class="panel result-panel">
+            <div class="panel-heading"><div><h2>Prediction result</h2><p id="result-subtitle">Your result will appear here</p></div><span class="step-number">02</span></div>
+            <div id="empty-result" class="result-empty"><div class="empty-orbit"><span>⌁</span></div><h3>Ready when you are</h3><p>Submit the rainfall values to see the model's output.</p></div>
+            <div id="prediction-result" hidden>
+              <div id="result-badge" class="result-badge"><span class="result-dot"></span><span id="result-label"></span></div>
+              <div class="probability-block"><div class="probability-top"><span>Model probability for high-rainfall class</span><strong id="probability-value">—</strong></div><div class="probability-track"><span id="probability-bar"></span></div><p>This is the model's class probability, not a probability of landslide.</p></div>
+              <div class="result-details"><div><span>Area</span><strong id="result-area">—</strong></div><div><span>Threshold</span><strong id="result-threshold">—</strong></div><div><span>Rainfall range</span><strong id="result-range">—</strong></div></div>
+              <div class="result-disclaimer"><strong>Interpret with care</strong><p id="result-notice">This is a high-rainfall demonstration, not a landslide prediction or emergency warning.</p></div>
+              <button type="button" class="button button-secondary button-full" id="reset-form">Check another area</button>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="page" id="page-data">
+        <div class="page-heading"><div><div class="eyebrow">DATA & MODEL</div><h1>Dataset overview</h1><p>What powers this local prototype—and what it does not yet include.</p></div></div>
+        <div class="stats-grid">
+          <article class="stat-card"><div class="stat-top"><span>Records available</span><span class="stat-icon green">▤</span></div><div class="stat-value">{{ summary.rows if summary.rows is not none else "—" }}</div><div class="stat-foot">Daily summary rows</div></article>
+          <article class="stat-card"><div class="stat-top"><span>Start date</span><span class="stat-icon blue">◷</span></div><div class="stat-value date-value">{{ summary.start_date or "—" }}</div><div class="stat-foot">First available date</div></article>
+          <article class="stat-card"><div class="stat-top"><span>End date</span><span class="stat-icon amber">◷</span></div><div class="stat-value date-value">{{ summary.end_date or "—" }}</div><div class="stat-foot">Last available date</div></article>
+          <article class="stat-card"><div class="stat-top"><span>Model state</span><span class="stat-icon purple">◎</span></div><div class="stat-value date-value">{% if model_ready %}Loaded{% else %}Unavailable{% endif %}</div><div class="stat-foot">Local saved model file</div></article>
+        </div>
+        <div class="content-grid data-grid">
+          <article class="panel"><div class="panel-heading"><div><h2>Model input features</h2><p>Values required by the saved XGBoost model</p></div></div>
+            <div class="feature-list"><div><span class="feature-bullet">01</span><span><strong>Maximum station rainfall</strong><small>rainfall_max_mm · millimetres</small></span></div><div><span class="feature-bullet">02</span><span><strong>Minimum station rainfall</strong><small>rainfall_min_mm · millimetres</small></span></div><div><span class="feature-bullet">03</span><span><strong>Reporting station count</strong><small>station_count · number of stations</small></span></div></div>
+          </article>
+          <article class="panel"><div class="panel-heading"><div><h2>Current limitations</h2><p>Next steps for the research project</p></div></div>
+            <ul class="limitation-list"><li>Target is a rainfall percentile proxy, not a landslide event.</li><li>Soil moisture and ground movement are not inputs to this prototype.</li><li>No live weather or automatic location detection is connected.</li><li>Real warning use requires verified event labels and independent validation.</li></ul>
+          </article>
+        </div>
+      </section>
+
+      <footer class="footer"><span>TerraWatch · Wayanad landslide research prototype</span><span>Built for localhost · Not for emergency use</span></footer>
+    </main>
+  </div>
+
+  <script>
+    const navLinks = document.querySelectorAll("[data-page]");
+    const pages = document.querySelectorAll(".page");
+    const breadcrumb = document.getElementById("breadcrumb-current");
+
+    function showPage(name) {
+      pages.forEach(page => page.classList.toggle("active", page.id === "page-" + name));
+      navLinks.forEach(link => link.classList.toggle("active", link.dataset.page === name));
+      breadcrumb.textContent = name === "check-risk" ? "Check risk on your area" : (name === "data" ? "Dataset overview" : "Dashboard");
+      window.location.hash = name;
+      window.scrollTo({top: 0, behavior: "smooth"});
+    }
+
+    navLinks.forEach(link => link.addEventListener("click", event => {
+      event.preventDefault();
+      showPage(link.dataset.page);
+    }));
+    document.querySelectorAll("[data-go]").forEach(button => button.addEventListener("click", () => showPage(button.dataset.go)));
+
+    const form = document.getElementById("prediction-form");
+    const errorBox = document.getElementById("form-error");
+    const emptyResult = document.getElementById("empty-result");
+    const resultPanel = document.getElementById("prediction-result");
+
+    document.getElementById("fill-example").addEventListener("click", () => {
+      document.getElementById("rainfall-max").value = 80;
+      document.getElementById("rainfall-min").value = 20;
+      document.getElementById("station-count").value = 5;
+      if (!document.getElementById("area-name").value) {
+        document.getElementById("area-name").value = "Example area";
+      }
+    });
+
+    document.getElementById("reset-form").addEventListener("click", () => {
+      form.reset();
+      errorBox.hidden = true;
+      resultPanel.hidden = true;
+      emptyResult.hidden = false;
+      document.getElementById("result-subtitle").textContent = "Your result will appear here";
+    });
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+      errorBox.hidden = true;
+
+      const max = Number(document.getElementById("rainfall-max").value);
+      const min = Number(document.getElementById("rainfall-min").value);
+      const count = Number(document.getElementById("station-count").value);
+
+      if (![max, min, count].every(Number.isFinite) || max < 0 || min < 0 || count <= 0 || min > max || !Number.isInteger(count)) {
+        errorBox.textContent = "Please enter valid values. Rainfall must be non-negative, minimum cannot exceed maximum, and station count must be a positive whole number.";
+        errorBox.hidden = false;
+        return;
+      }
+
+      const button = document.getElementById("run-prediction");
+      button.disabled = true;
+      button.innerHTML = "Running model…";
+
+      try {
+        const response = await fetch("/api/predict", {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({
+            rainfall_max_mm: max,
+            rainfall_min_mm: min,
+            station_count: count
+          })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "Could not run prediction.");
+
+        emptyResult.hidden = true;
+        resultPanel.hidden = false;
+
+        document.getElementById("result-label").textContent = data.label;
+        document.getElementById("probability-value").textContent = (data.probability * 100).toFixed(1) + "%";
+        document.getElementById("probability-bar").style.width = (data.probability * 100) + "%";
+        document.getElementById("result-area").textContent = document.getElementById("area-name").value.trim() || "Unspecified area";
+        document.getElementById("result-threshold").textContent = data.threshold_mm.toFixed(2) + " mm";
+        document.getElementById("result-range").textContent = data.inputs.rainfall_min_mm + "–" + data.inputs.rainfall_max_mm + " mm";
+        document.getElementById("result-notice").textContent = data.notice;
+        document.getElementById("result-subtitle").textContent = "Prototype output generated successfully";
+
+        const badge = document.getElementById("result-badge");
+        badge.classList.toggle("result-high", data.prediction === 1);
+        badge.classList.toggle("result-low", data.prediction === 0);
+      } catch (error) {
+        errorBox.textContent = error.message;
+        errorBox.hidden = false;
+      } finally {
+        button.disabled = false;
+        button.innerHTML = 'Run model <span>→</span>';
+      }
+    });
+
+    const initialPage = window.location.hash.replace("#", "");
+    if (["dashboard", "check-risk", "data"].includes(initialPage)) showPage(initialPage);
+  </script>
+</body>
+</html>
